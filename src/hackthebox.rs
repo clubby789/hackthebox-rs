@@ -81,11 +81,13 @@ impl HackTheBox {
 
     /// Get a given [`Challenge`] from the API.
     pub async fn get_challenge(&self, id: u32) -> Result<Challenge> {
-        self.do_get_request::<ProfileWrapper<_>>(&format!("challenge/info/{id}"), true)
+        self.do_get_request::<ChallengeWrapper<_>>(&format!("challenge/info/{id}"), true)
             .await
-            .map(|w| w.profile)
+            .map(|w| w.challenge)
     }
 }
+
+// TODO: Helper function for deserializing something with a base field
 
 #[derive(Deserialize)]
 struct InfoWrapper<T> {
@@ -95,4 +97,9 @@ struct InfoWrapper<T> {
 #[derive(Deserialize)]
 struct ProfileWrapper<T> {
     profile: T,
+}
+
+#[derive(Deserialize)]
+struct ChallengeWrapper<T> {
+    challenge: T,
 }
