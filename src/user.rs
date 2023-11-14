@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 use std::fmt::{self, Display, Formatter};
 
 // TODO: Make an enum
@@ -59,6 +59,54 @@ pub struct UniversitySummary {
     name: String,
     logo_thumb_url: String,
     rank: u32,
+}
+
+/// A summary version of [`User`] used for displaying details of content authors
+#[derive(Debug, Deserialize)]
+pub struct ContentAuthor {
+    #[serde(rename = "creator_id")]
+    id: u32,
+    #[serde(rename = "creator_name")]
+    name: String,
+    #[serde(rename = "creator_avatar")]
+    avatar: String,
+    #[serde(rename = "isRespected")]
+    is_respected: bool,
+}
+
+pub(crate) fn content_author_2<'de, D>(deserializer: D) -> Result<Option<ContentAuthor>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    pub struct ContentAuthor2 {
+        #[serde(rename = "creator2_id")]
+        id: u32,
+        #[serde(rename = "creator2_name")]
+        name: String,
+        #[serde(rename = "creator2_avatar")]
+        avatar: String,
+        #[serde(rename = "isRespected2")]
+        is_respected: bool,
+    }
+
+    let res = ContentAuthor2::deserialize(deserializer);
+    if let Ok(ContentAuthor2 {
+        id,
+        name,
+        avatar,
+        is_respected,
+    }) = res
+    {
+        Ok(Some(ContentAuthor {
+            id,
+            name,
+            avatar,
+            is_respected,
+        }))
+    } else {
+        Ok(None)
+    }
 }
 
 impl Display for User {
