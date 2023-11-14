@@ -120,6 +120,7 @@ pub struct ContentAuthor {
     is_respected: bool,
 }
 
+/// Deserialize the `creator2_...` flattened fields in e.g. a [`crate::Challenge`]
 pub(crate) fn content_author_2<'de, D>(deserializer: D) -> Result<Option<ContentAuthor>, D::Error>
 where
     D: Deserializer<'de>,
@@ -127,32 +128,89 @@ where
     #[derive(Deserialize)]
     pub struct ContentAuthor2 {
         #[serde(rename = "creator2_id")]
-        id: u32,
+        id: Option<u32>,
         #[serde(rename = "creator2_name")]
-        name: String,
+        name: Option<String>,
         #[serde(rename = "creator2_avatar")]
-        avatar: String,
+        avatar: Option<String>,
         #[serde(rename = "isRespected2")]
-        is_respected: bool,
+        is_respected: Option<bool>,
     }
 
-    let res = ContentAuthor2::deserialize(deserializer);
-    if let Ok(ContentAuthor2 {
+    let ContentAuthor2 {
+        id: Some(id),
+        name: Some(name),
+        avatar: Some(avatar),
+        is_respected: Some(is_respected),
+    } = ContentAuthor2::deserialize(deserializer)?
+    else {
+        return Ok(None);
+    };
+    Ok(Some(ContentAuthor {
         id,
         name,
         avatar,
         is_respected,
-    }) = res
-    {
-        Ok(Some(ContentAuthor {
-            id,
-            name,
-            avatar,
-            is_respected,
-        }))
-    } else {
-        Ok(None)
+    }))
+}
+
+/// Deserialize the `maker` fields of, e.g. a [`crate::Machine`], allowing `null` subfields
+pub(crate) fn maker_optional<'de, D>(deserializer: D) -> Result<Option<ContentAuthor>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    pub struct Maker {
+        id: Option<u32>,
+        name: Option<String>,
+        avatar: Option<String>,
+        #[serde(rename = "isRespected")]
+        is_respected: Option<bool>,
     }
+
+    let Maker {
+        id: Some(id),
+        name: Some(name),
+        avatar: Some(avatar),
+        is_respected: Some(is_respected),
+    } = Maker::deserialize(deserializer)?
+    else {
+        return Ok(None);
+    };
+    Ok(Some(ContentAuthor {
+        id,
+        name,
+        avatar,
+        is_respected,
+    }))
+}
+
+/// Deserialize the `maker` fields of, e.g. a [`crate::Machine`], requiring subfields to be set
+pub(crate) fn maker<'de, D>(deserializer: D) -> Result<ContentAuthor, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    pub struct Maker {
+        id: u32,
+        name: String,
+        avatar: String,
+        #[serde(rename = "isRespected")]
+        is_respected: bool,
+    }
+
+    let Maker {
+        id,
+        name,
+        avatar,
+        is_respected,
+    } = Maker::deserialize(deserializer)?;
+    Ok(ContentAuthor {
+        id,
+        name,
+        avatar,
+        is_respected,
+    })
 }
 
 impl Display for User {

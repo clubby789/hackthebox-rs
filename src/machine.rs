@@ -1,4 +1,5 @@
 use crate::common::bool_from_int;
+use crate::user::ContentAuthor;
 use getset::{CopyGetters, Getters};
 use serde::Deserialize;
 use std::fmt::{self, Display, Formatter};
@@ -52,9 +53,11 @@ pub struct Machine {
     is_completed: bool,
     // TODO: maker object
     #[get = "pub"]
-    maker: Option<serde_json::Value>,
+    #[serde(deserialize_with = "crate::user::maker")]
+    maker: ContentAuthor,
     #[get = "pub"]
-    maker2: Option<serde_json::Value>,
+    #[serde(deserialize_with = "crate::user::maker_optional")]
+    maker2: Option<ContentAuthor>,
     #[serde(deserialize_with = "bool_from_int")]
     #[get_copy = "pub"]
     recommended: bool,
